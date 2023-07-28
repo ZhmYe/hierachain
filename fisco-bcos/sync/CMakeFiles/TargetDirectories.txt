@@ -1,0 +1,13 @@
+/Users/tanghaibo/fisco/FISCO-BCOS/fisco-bcos/sync/CMakeFiles/install/local.dir
+/Users/tanghaibo/fisco/FISCO-BCOS/fisco-bcos/sync/CMakeFiles/install/strip.dir
+/Users/tanghaibo/fisco/FISCO-BCOS/fisco-bcos/sync/CMakeFiles/install.dir
+/Users/tanghaibo/fisco/FISCO-BCOS/fisco-bcos/sync/CMakeFiles/list_install_components.dir
+/Users/tanghaibo/fisco/FISCO-BCOS/fisco-bcos/sync/CMakeFiles/rebuild_cache.dir
+/Users/tanghaibo/fisco/FISCO-BCOS/fisco-bcos/sync/CMakeFiles/edit_cache.dir
+/Users/tanghaibo/fisco/FISCO-BCOS/fisco-bcos/sync/main/CMakeFiles/install/strip.dir
+/Users/tanghaibo/fisco/FISCO-BCOS/fisco-bcos/sync/main/CMakeFiles/install.dir
+/Users/tanghaibo/fisco/FISCO-BCOS/fisco-bcos/sync/main/CMakeFiles/list_install_components.dir
+/Users/tanghaibo/fisco/FISCO-BCOS/fisco-bcos/sync/main/CMakeFiles/rebuild_cache.dir
+/Users/tanghaibo/fisco/FISCO-BCOS/fisco-bcos/sync/main/CMakeFiles/edit_cache.dir
+/Users/tanghaibo/fisco/FISCO-BCOS/fisco-bcos/sync/main/CMakeFiles/install/local.dir
+/Users/tanghaibo/fisco/FISCO-BCOS/fisco-bcos/sync/main/CMakeFiles/fisco-bcos.dir

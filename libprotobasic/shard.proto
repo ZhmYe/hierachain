@@ -1,0 +1,212 @@
+syntax = "proto3";
+package protos;
+
+message SubPreCommitedDisTx
+{
+    bytes subTxRlp = 1;
+    bytes contractAddress = 2;
+}
+
+message RLPWithReadSet
+{
+    bytes subTxRlp = 1;
+    bytes readset = 2;
+    bytes contractAddress = 3;
+}
+
+message CommittedRLPWithReadSet
+{
+    bytes subTxRlp = 1;
+    bytes readset = 2;
+    bytes contractAddress = 3;
+}
+
+message KV
+{
+    bytes key=1;
+    bytes value=2;
+}
+
+message Block {
+    BlockHeader blockHeader = 1;
+    repeated Transaction transactions = 2;
+}
+
+message DAGWithReadSet {
+    uint64 blockNum = 1;
+    uint64 dagId = 2;
+    uint64 shardId = 3;
+    repeated bytes transactions = 4;
+    repeated KV readSet = 5;
+    uint64 readSetNum = 6;
+}
+
+message Transaction {
+   uint64 txId = 1;
+   bytes from = 2;
+   bytes to = 3;
+   bytes value = 4;
+   bytes data = 5;
+   repeated uint64 readers = 6;
+   repeated uint64 writers = 7;
+   repeated bytes read_set = 8;
+   repeated bytes read_write_set = 9;
+   uint64 shardId = 10;
+   uint64 DAGId = 11;
+   repeated bytes lastStateInDAG = 12;
+}
+
+message TxWithReadSet{
+    uint64 txId = 1;
+    uint64 dagId = 2;
+    repeated KV readSet = 3;
+}
+
+message CheckPoint{
+    uint64 checkpoint_id = 1;
+    bytes stateRoot = 2;
+    bytes transactionsRoot = 3;
+}
+
+message ReadSet
+{
+    uint64 tx_idx=1;
+    repeated KV read_set=2;
+}
+
+message CommitState{
+    uint64 blockid = 1;
+}
+
+message BlockHeader {
+    bytes parentHash = 1;
+    bytes stateRoot = 2;
+    bytes transactionsRoot = 3;
+    uint64 number = 4;
+    bytes gasLimit = 5;
+    bytes gasUsed = 6;
+    uint64 timestamp = 7;
+    bytes signature = 8;
+    uint64 shardId = 9;
+}
+
+/*
+service BlockService {
+rpc GetBlock (BlockRequest) returns (Block) {}
+}
+
+message BlockRequest {
+    int64 blockid = 1;
+    int64 shardid = 2;
+}
+*/
+
+// ADD BY THB
+message SubCrossShardTx
+{
+    bytes subTxRlp = 1;
+    uint64 messageId = 2;
+    int64 sourceShardId = 3;
+    int64 destinShardId = 4;
+    bytes signeddata = 5;
+    bytes readwriteset = 6;
+    bytes participants = 7;
+    bytes crossshardtxid = 8;
+}
+
+message BatchDistributedTxMsg
+{
+    uint64 coordinatorshardid = 1;
+    uint64 id = 2;
+    bytes txContents = 3;
+    bytes intrashard_txcontents = 4;
+    bytes toSendreadwriteset = 5;
+    bytes shuffle_states_contents = 6;
+}
+
+
+message csTxRWset
+{
+    bytes crossshardtxid = 1;
+    bytes readwritekey = 2;
+    bytes value = 3;
+    int64 accessnum = 4;
+    bytes contentionrate = 5;
+    int64 sourceshardid = 6;
+}
+
+message ResponseToForward
+{
+	bytes crossshardtxid = 1;
+    bytes intershardTxids = 2;
+}
+
+message CommitResponseToCoordinator
+{
+    int64 participantshardid = 1;
+	bytes intershardtxids = 2;
+}
+
+message RequestForMasterShardMsg
+{
+    int64 sourceShardId = 1;
+    int64 destinShardId = 2;
+    bytes readwritekey = 4;
+    bytes requestmessageId = 3;
+}
+
+message MasterShardPrePrepareMsg
+{
+    int64 sourceShardId = 1;
+    int64 destinShardId = 2;
+    bytes readwritekey = 3;
+    bytes requestmessageId = 4;
+    int64 coordinatorShardId = 5;
+
+    bytes sourceshardids = 6;
+    bytes destinshardids = 7;
+    bytes readwritekeys = 8;
+    bytes requestmessageids = 9;
+}
+
+message MasterShardPrepareMsg
+{
+    bytes sourceshardids = 1;
+    bytes destinshardids = 2;
+    bytes readwritekeys = 3;
+    bytes requestmessageids = 4; 
+    int64 coordinatorshardid = 5;
+}
+
+message MasterShardCommitMsg
+{
+    bytes sourceshardids = 1;
+    bytes destinshardids = 2;
+    bytes readwritekeys = 3;
+    bytes requestmessageids = 4; 
+    int64 coordinatorshardid = 5;
+}
+
+message IntraShardTxMsg
+{
+    bytes subTxRlp = 1;
+    uint64 messageId = 2;
+    int64 sourceShardId = 3;
+    int64 destinShardId = 4;
+    bytes signeddata = 5;
+    bytes readwriteset = 6;
+    bytes participants = 7;
+    bytes crossshardtxid = 8;
+}
+
+message ShuffleStateValue
+{
+    string stateAddresses = 1;
+    string values = 2;
+    string sourceshardid = 3;
+}
+
+message ShuffleTxRlps
+{
+    string txrlps = 1;
+}
