@@ -289,7 +289,8 @@ void injectTxs::injectionTransactions(string& intrashardworkload_filename,
     // int SPEED = 4000;
     // int SPEED = 2500; // 速率用想要的速率除以线程数 5000 / 2
     int SPEED = dev::plugin::injectSpeed;
-    int baseNum = (threadId - 1) * 50000;
+    int baseNum_Piece = 1.0 * min(dev::plugin::intra_generateNumber, dev::plugin::inter_generateNumber) / float(dev::plugin::inject_threadNumber);
+    int baseNum = (threadId - 1) * baseNum_Piece;
     // 只导入片内交易(只需转发节点负责)
     if(intratxNum != 0 && intertxNum == 0 && crosslayerNum == 0 
         && hieraShardTree->is_forward_node(dev::consensus::internal_groupId, dev::plugin::nodeIdHex)){
@@ -546,7 +547,7 @@ void injectTxs::generateIntraShardWorkLoad(int32_t shardid, string filename, int
         int fileOrder = 1;
         srand(time(0));
         for(int j = 1; j <= txNumber; j++){
-            int txid = j;
+            txid++;
             // 生成两个不同的随机数
             // int state_id1 = rand() % 1000 + 1000 * (shardid - 1);
             // int state_id2 = rand() % 1000 + 1000 * (shardid - 1);
@@ -635,27 +636,30 @@ void injectTxs::generateIntraShardWorkLoad(int32_t shardid, string filename, int
 /**
  * NOTES: 生成分片跨片交易负载，shardid为协调者的shardid，filename为生成的负载文件名称(默认跨两个分片)
  * */
-void injectTxs::generateInterShardWorkLoad(int32_t coordinator_shardid, string& lower_groupIds, string filename, int txNumber, shared_ptr<dev::ledger::LedgerManager> ledgerManager)
+void injectTxs::generateInterShardWorkLoad(int32_t coordinator_shardid, string filename, int txNumber, shared_ptr<dev::ledger::LedgerManager> ledgerManager)
 {
     // 只需要一个节点负责生成就可以，默认转发节点生成
     if(hieraShardTree->is_forward_node(dev::consensus::internal_groupId, dev::plugin::nodeIdHex)){ // 由转发节点投递到交易池
 
         vector<string> txrlps;
-        vector<string> lower_groupId_items;
-        boost::split(lower_groupId_items, lower_groupIds, boost::is_any_of(","), boost::token_compress_on);
-        int lower_shards_size = lower_groupId_items.size();
-        int txid = 0;
+        // vector<string> lower_groupId_items;
+        // boost::split(lower_groupId_items, lower_groupIds, boost::is_any_of(","), boost::token_compress_on);
+        // int lower_shards_size = lower_groupId_items.size();
+        // int txid = 0;
 
         srand(time(0));
         for(int i = 0; i < txNumber; i++){
-            int shard1_index = rand() % lower_shards_size;
-            int shard2_index = rand() % lower_shards_size;
-            while(shard2_index == shard1_index) {
-                shard2_index = rand() % lower_shards_size;
-            }
+            // int shard1_index = rand() % lower_shards_size;
+            // int shard2_index = rand() % lower_shards_size;
+            // while(shard2_index == shard1_index) {
+            //     shard2_index = rand() % lower_shards_size;
+            // }
 
-            int shardid1 = atoi(lower_groupId_items.at(shard1_index).c_str()); // 跨片交易涉及的分片
-            int shardid2 = atoi(lower_groupId_items.at(shard2_index).c_str());
+            // int shardid1 = atoi(lower_groupId_items.at(shard1_index).c_str()); // 跨片交易涉及的分片
+            // int shardid2 = atoi(lower_groupId_items.at(shard2_index).c_str());
+            pair<int, int> shard_ids = dev::plugin::hieraShardTree->get_inter_childs(dev::consensus::internal_groupId);
+            int shardid1 = shard_ids.first;
+            int shardid2 = shard_ids.second;
             // int state_index1 = rand() % 1000 + (shardid1 - 1) * 1000;
             // int state_index2 = rand() % 1000 + (shardid2 - 1) * 1000;
             int state_each_shard = state_num / hieraShardTree->get_hiera_shard_number();
@@ -733,169 +737,6 @@ void injectTxs::generateInterShardWorkLoad(int32_t coordinator_shardid, string& 
         }
     }
 }
-
-
-int injectTxs::getCrossId(int id) {
-    srand((unsigned)time(NULL));
-    int newId = 0;
-
-    if (id <= 3) {
-        // 范围:[5-9]
-        newId = (rand() % 5) + 5;
-    } else if (id == 4) {
-        // 范围:[5-7]
-        newId = (rand() % 3) + 5;
-    } else if (id <= 7) {
-        // 范围:[1-4,9]
-        newId = (rand() % 5) + 1;
-        if (newId == 5) {
-            newId = 9;
-        }
-    } else if (id == 8) {
-        // 范围:[1-3]
-        newId = (rand() % 3) + 1;
-    } else if (id ==9) {
-        // 范围:[1-3, 5-7]
-        newId = (rand() % 6) + 1;
-        if (newId > 3) {
-            newId++;
-        }
-    }
-    return newId;
-}
-
-void injectTxs::generateCrossLayerWorkLoad_9(int32_t shardid, string& lower_groupIds, string filename, int txNumber, shared_ptr<dev::ledger::LedgerManager> ledgerManager) {
-    // 只需要一个节点负责生成就可以，默认转发节点生成
-    if(hieraShardTree->is_forward_node(dev::consensus::internal_groupId, dev::plugin::nodeIdHex)){ // 由转发节点投递到交易池
-
-        vector<string> txrlps;
-        vector<string> lower_groupId_items;
-        boost::split(lower_groupId_items, lower_groupIds, boost::is_any_of(","), boost::token_compress_on);
-        int lower_shards_size = lower_groupId_items.size();
-        int txid = 0;
-
-        srand(time(0));
-        for(int i = 0; i < txNumber; i++){
-
-            int shard1_index = rand() % lower_shards_size;
-            int shardid1 = atoi(lower_groupId_items.at(shard1_index).c_str()); // 跨片交易涉及的分片
-            int shardid2 = getCrossId(shard1_index);
-
-            int state_index1 = rand() % 1000 + (shardid1 - 1) * 1000;
-            int state_index2 = rand() % 1000 + (shardid2 - 1) * 1000;
-            string statekey1 = "state" + to_string(state_index1); // 跨片交易涉及的状态
-            string statekey2 = "state" + to_string(state_index2);
-
-            // 生成 subtx1
-            string requestLabel = "";
-            string statekeys = "";
-            string signTx1 = generateTx(requestLabel, statekeys, shardid1, txid, false, true);
-
-            // 生成 subtx2
-            requestLabel = "";
-            statekeys = "";
-            string signTx2 = generateTx(requestLabel, statekeys, shardid2, txid, false, true);
-
-            // 生成最终的Tx
-            requestLabel = "0x111222333"; // 生成最终的跨片交易
-            string flag = "|";
-            string rwsets = statekey1 + "_" + statekey2;
-            string hex_m_data_str = requestLabel + flag + "a" + to_string(txid)
-                                                 + flag + to_string(shardid1) + flag + signTx1 + flag + rwsets 
-                                                 + flag + to_string(shardid2) + flag + signTx2 + flag + rwsets
-                                                 + flag;
-
-            string contract_address = "0x728a02ac510f6802813fece0ed12e7f774dab69d";
-            dev::Address crossAddress(contract_address);
-            dev::eth::ContractABI abi;
-            bytes data = abi.abiIn("set(string)", hex_m_data_str);
-
-            Transaction tx(0, 1000, 0, crossAddress, data);
-            tx.setNonce(generateRandomValue());
-            // tx.setGroupId(coordinator_shardid);
-            // tx.setBlockLimit(u256(ledgerManager->blockChain(coordinator_shardid)->number()) + 500);
-            
-            auto keyPair = KeyPair::create();
-            auto sig = dev::crypto::Sign(keyPair, tx.hash(WithoutSignature));
-            tx.updateSignature(sig);
-            string txrlp = toHex(tx.rlp());
-            txrlps.push_back(txrlp);
-            
-            txid++;
-        }
-
-        // 将 txrlps 中的交易写入文件
-        string res = "";
-        int addedTxSize = 0;
-        int tx_size = txrlps.size();
-        for(int i = 0; i < tx_size; i++){
-            string txrlp = txrlps.at(i);
-            if(addedTxSize == 0){
-                res = "[\"" + txrlp + "\"";
-            }
-            else if(addedTxSize == tx_size - 1){
-                res += "]";
-            }
-            else{
-                res += ",\"" + txrlp + "\"";
-            }
-            addedTxSize++;
-        }
-
-        ofstream out;
-        out.open(filename, ios::in|ios::out|ios::app);
-        if (out.is_open()) {
-            out << res;
-            out.close();
-        }
-    }
-}
-
-int injectTxs::getCrossId_13(int id) {
-    srand((unsigned)time(NULL));
-    int newId = 0;
-
-    if (id <= 3) {
-        // 范围:[5-12]
-        newId = (rand() % 8) + 5;
-    } else if (id == 4) {
-        // 范围:[5-7, 9-11]
-        newId = (rand() % 6) + 5;
-        if (newId >= 8) {
-            newId++;
-        }
-    } else if (id <= 7) {
-        // 范围:[1-4, 9-12]
-        newId = (rand() % 8) + 1;
-        if (newId >= 5) {
-            newId += 4;
-        }
-    } else if (id == 8) {
-        // 范围:[1-3, 9-11]
-        newId = (rand() % 6) + 1;
-        if (newId >= 4) {
-            newId += 5;
-        }
-    } else if (id <= 11) {
-        // 范围:[1-8]
-        newId = (rand() % 8) + 1;
-    } else if (id == 12) {
-        // 范围:[1-3, 5-7]
-        newId = (rand() % 6) + 1;
-        if (newId >= 4) {
-            newId++;
-        }
-    } else if (id == 13) {
-        // 范围:[1-3, 5-7, 9-11]
-        newId = (rand() % 9) + 1;
-        if (4 <= newId && newId <= 6 ) {
-            newId++;
-        } else if (newId >= 7) {
-            newId += 2;
-        }
-    }
-    return newId;
-}
 // todo
 // 获取跨层跨片交易的两个分片id
 // 跨层跨片交易，两个分片在不同的子树
@@ -917,7 +758,7 @@ void injectTxs::generateCrossLayerWorkLoad(int internal_groupId, string filename
   //      vector<string> lower_groupId_items;
   //      boost::split(lower_groupId_items, lower_groupIds, boost::is_any_of(","), boost::token_compress_on);
   //      int lower_shards_size = lower_groupId_items.size();
-        int txid = 0;
+        // int txid = 0;
         srand(time(0));
         for(int i = 0; i < txNumber; i++){
             pair<int, int> shard_ids = getCrossLayerShardIds(internal_groupId);
@@ -964,92 +805,6 @@ void injectTxs::generateCrossLayerWorkLoad(int internal_groupId, string filename
             tx.updateSignature(sig);
             string txrlp = toHex(tx.rlp());
             txrlps.push_back(txrlp);
-            txid++;
-        }
-
-        // 将 txrlps 中的交易写入文件
-        string res = "";
-        int addedTxSize = 0;
-        int tx_size = txrlps.size();
-        for(int i = 0; i < tx_size; i++){
-            string txrlp = txrlps.at(i);
-            if(addedTxSize == 0){
-                res = "[\"" + txrlp + "\"";
-            }
-            else if(addedTxSize == tx_size - 1){
-                res += "]";
-            }
-            else{
-                res += ",\"" + txrlp + "\"";
-            }
-            addedTxSize++;
-        }
-
-        ofstream out;
-        out.open(filename, ios::in|ios::out|ios::app);
-        if (out.is_open()) {
-            out << res;
-            out.close();
-        }
-    }
-}
-void injectTxs::generateCrossLayerWorkLoad_13(int32_t shardid, string& lower_groupIds, string filename, int txNumber, shared_ptr<dev::ledger::LedgerManager> ledgerManager) {
-    // 只需要一个节点负责生成就可以，默认转发节点生成
-    if(hieraShardTree->is_forward_node(dev::consensus::internal_groupId, dev::plugin::nodeIdHex)){ // 由转发节点投递到交易池
-
-        vector<string> txrlps;
-        vector<string> lower_groupId_items;
-        boost::split(lower_groupId_items, lower_groupIds, boost::is_any_of(","), boost::token_compress_on);
-        int lower_shards_size = lower_groupId_items.size();
-        int txid = 0;
-
-        srand(time(0));
-        for(int i = 0; i < txNumber; i++){
-
-            int shard1_index = rand() % lower_shards_size;
-            int shardid1 = atoi(lower_groupId_items.at(shard1_index).c_str()); // 跨片交易涉及的分片
-            int shardid2 = getCrossId_13(shard1_index);
-
-            int state_index1 = rand() % 1000 + (shardid1 - 1) * 1000;
-            int state_index2 = rand() % 1000 + (shardid2 - 1) * 1000;
-            string statekey1 = "state" + to_string(state_index1); // 跨片交易涉及的状态
-            string statekey2 = "state" + to_string(state_index2);
-
-            // 生成 subtx1
-            string requestLabel = "";
-            string statekeys = "";
-            string signTx1 = generateTx(requestLabel, statekeys, shardid1, txid, false, true);
-
-            // 生成 subtx2
-            requestLabel = "";
-            statekeys = "";
-            string signTx2 = generateTx(requestLabel, statekeys, shardid2, txid, false, true);
-
-            // 生成最终的Tx
-            requestLabel = "0x111222333"; // 生成最终的跨片交易
-            string flag = "|";
-            string rwsets = statekey1 + "_" + statekey2;
-            string hex_m_data_str = requestLabel + flag + "a" + to_string(txid)
-                                                 + flag + to_string(shardid1) + flag + signTx1 + flag + rwsets 
-                                                 + flag + to_string(shardid2) + flag + signTx2 + flag + rwsets
-                                                 + flag;
-
-            string contract_address = "0x728a02ac510f6802813fece0ed12e7f774dab69d";
-            dev::Address crossAddress(contract_address);
-            dev::eth::ContractABI abi;
-            bytes data = abi.abiIn("set(string)", hex_m_data_str);
-
-            Transaction tx(0, 1000, 0, crossAddress, data);
-            tx.setNonce(generateRandomValue());
-            // tx.setGroupId(coordinator_shardid);
-            // tx.setBlockLimit(u256(ledgerManager->blockChain(coordinator_shardid)->number()) + 500);
-            
-            auto keyPair = KeyPair::create();
-            auto sig = dev::crypto::Sign(keyPair, tx.hash(WithoutSignature));
-            tx.updateSignature(sig);
-            string txrlp = toHex(tx.rlp());
-            txrlps.push_back(txrlp);
-            
             txid++;
         }
 

@@ -89,6 +89,7 @@ public:
     int getLCA(int shard_1_groupId, int shard_2_groupId);
     int getLCA(HieraShardNode* shard_1, HieraShardNode* shard_2);
     pair<string, string> get_shard_info_by_internal_groupId(int internal_groupId);
+    pair<int, int> get_inter_childs(int internal_group_id);
     int get_cross_layer_child(int internal_groupId);
     pair<int, int> get_cross_layer_childs(int internal_groupId);
     void get_all_child(HieraShardNode* shard, vector<int>* ids);

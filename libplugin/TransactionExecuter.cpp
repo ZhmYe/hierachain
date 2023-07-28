@@ -307,10 +307,10 @@ string TransactionExecuter::getValueByStateAddress(string& rwkey)
 void TransactionExecuter::processConsensusBlock(){
     int blockid = 0;
     int currentblockid = 0;
-    int lastId = 0;
+    // int lastId = 0;
     int transactions_size = 0;
     int scannedTxNum = 0;
-    std::chrono::steady_clock::time_point lastTime = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point lastTime = std::chrono::steady_clock::now();
     shared_ptr<Block> currentBlock;
     while(true){
         currentblockid = m_blockchainManager->number(); // 当前块高
@@ -361,24 +361,27 @@ void TransactionExecuter::processConsensusBlock(){
                     break;
                 }
             }
-            if (blockid % 10 == 0) {
-                checkSubTxsContainers(); // 将积攒的交易发送给下层分片
-                lastId = blockid; // 保存最后清空的blockid
-                lastTime = std::chrono::steady_clock::now(); // 重置时间
+            if (dev::plugin::cross_rate == 20) {
+                if (blockid % 10 == 0) {
+                    checkSubTxsContainers();
+                }
+            } else {
+                checkSubTxsContainers();
             }
         }
         else {
-            if (blockid != lastId) {
-                // 如果3s内不变，就把积攒的发了
-                if (std::chrono::duration<double>(std::chrono::steady_clock::now() - lastTime).count() >= 3) {
-                    checkSubTxsContainers();
-                    lastId = blockid;
-                    lastTime = std::chrono::steady_clock::now(); // 重置时间
-                }
-            }
-            else {
-                lastTime = std::chrono::steady_clock::now(); // 重置时间
-            }
+            // if (blockid != lastId) {
+            //     // 如果3s内不变，就把积攒的发了
+            //     if (chrono::duration_cast<chrono::milliseconds>(std::chrono::duration<double>(std::chrono::steady_clock::now() - lastTime)).count() >= 300) {
+            //         // checkSubTxsContainers();
+            //         m_commit_finished_flag = true;
+            //         // lastId = blockid;
+            //         // lastTime = std::chrono::steady_clock::now(); // 重置时间
+            //     }
+            // }
+            // else {
+            //     lastTime = std::chrono::steady_clock::now(); // 重置时间
+            // }
             this_thread::sleep_for(chrono::milliseconds(10));
         }
 }}
@@ -3108,17 +3111,17 @@ void TransactionExecuter::setAttribute(shared_ptr<dev::blockchain::BlockChainInt
  * NOTES: 计算分片发出的交易平均延迟
  * */
 void TransactionExecuter::average_latency(){
-    int totalTime = 0;
+    long totalTime = 0;
     int totalTxNum = 0;
 
     // 计算交易平均延时
     for(auto iter = m_txid_to_endtime->begin(); iter != m_txid_to_endtime->end(); iter++){
         string txid = iter->first;
-        int endtime = iter->second;
-        int starttime = 0;
+        long endtime = iter->second;
+        long starttime = 0;
         if(m_txid_to_starttime->count(txid) != 0){
             starttime = m_txid_to_starttime->at(txid);
-            int interval = endtime - starttime;
+            long interval = endtime - starttime;
             totalTime = totalTime + interval;
             totalTxNum++;
         }

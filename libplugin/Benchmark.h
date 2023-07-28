@@ -27,6 +27,11 @@ namespace dev
         extern shared_ptr<dev::plugin::HieraShardTree> hieraShardTree;
         extern int injectSpeed;
         extern int total_injectNum;
+        extern int inject_threadNumber;
+        extern int intra_generateNumber;
+        extern int inter_generateNumber;
+        extern int cross_rate;
+        extern int txid;
         class injectTxs
         {
             public:
@@ -72,20 +77,13 @@ namespace dev
                 
                 void generateIntraShardWorkLoad(int32_t shardid, string filename, int txNumber, int shard_number);
 
-                void generateInterShardWorkLoad(int32_t shardid, string& lower_groupIds, string filename, int txNumber, shared_ptr<dev::ledger::LedgerManager> ledgerManager);
+                void generateInterShardWorkLoad(int32_t shardid, string filename, int txNumber, shared_ptr<dev::ledger::LedgerManager> ledgerManager);
         
-                void generateCrossLayerWorkLoad_9(int32_t shardid, string& lower_groupIds, string filename, int txNumber, shared_ptr<dev::ledger::LedgerManager> ledgerManager);
-
-                void generateCrossLayerWorkLoad_13(int32_t shardid, string& lower_groupIds, string filename, int txNumber, shared_ptr<dev::ledger::LedgerManager> ledgerManager);
-
                 void generateLocalityIntraShardWorkLoad(int32_t shardid, string filename, int txNumber, int shard_number, double localityRate);
 
                 void generateLocalityInterShardWorkLoad(int32_t coordinator_shardid, string& lower_groupIds, string filename, int txNumber, shared_ptr<dev::ledger::LedgerManager> ledgerManager, double localityRate);
 
                 void generateCrossLayerWorkLoad(int internal_groupId, string filename, int txNumber, shared_ptr<dev::ledger::LedgerManager> ledgerManager);
-                int getCrossId(int id);
-
-                int getCrossId_13(int id);
 
                 pair<int, int> getCrossLayerShardIds(int id);
         };
@@ -171,7 +169,12 @@ namespace dev
                     int intraTxNumber = totalTxNumber - interTxNumber;
                     cout << "inter Tx Number:" << interTxNumber << endl;
                     cout << "intra Tx Number:" << intraTxNumber << endl;
-                    int each_shard_intraTxNumber = min(int(1.0 * intraTxNumber / float(dev::consensus::hiera_shard_number)), max_txnum);
+                    int each_shard_intraTxNumber;
+                    if (dev::plugin::cross_rate == 20) {
+                        each_shard_intraTxNumber = min(int(1.0 * intraTxNumber / float(dev::consensus::hiera_shard_number)), max_txnum);
+                    } else {
+                        each_shard_intraTxNumber = min(int(1.0 * intraTxNumber / float(dev::plugin::hieraShardTree->get_intra_shard_number())), max_txnum);
+                    }
                     int inter_tx_number = interTxNumber * (1 - rate_cross_area) * float(1 / float(dev::plugin::hieraShardTree->get_inter_shard_number()));
                     int cross_tx_number = interTxNumber * rate_cross_area * float(1 / float(dev::plugin::hieraShardTree->get_cross_layer_shard_number()));
                     // 仅仅有片内交易
@@ -180,11 +183,13 @@ namespace dev
                     }
                     // 仅仅有局部性跨片交易
                     else if (dev::plugin::hieraShardTree->is_inter(internal_groupId) && ! dev::plugin::hieraShardTree->is_cross_layer(internal_groupId)) {
-                        return make_tuple(each_shard_intraTxNumber, min(max_txnum, inter_tx_number), 0);
+                        int local_intra_number = (dev::plugin::cross_rate == 20) ? each_shard_intraTxNumber : 0;
+                        return make_tuple(local_intra_number, min(max_txnum, inter_tx_number), 0);
                     } 
                     else {
                     // 有跨层跨片交易，那么一定有局部跨片交易
-                        return make_tuple(each_shard_intraTxNumber, min(inter_tx_number, max_txnum), min(cross_tx_number, max_txnum));
+                        int local_intra_number = (dev::plugin::cross_rate == 20) ? each_shard_intraTxNumber : 0;
+                        return make_tuple(local_intra_number, min(inter_tx_number, max_txnum), min(cross_tx_number, max_txnum));
                   }
                 }
         };

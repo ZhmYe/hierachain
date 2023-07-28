@@ -339,6 +339,20 @@ void HieraShardTree::get_all_child(HieraShardNode* shard, vector<int>* ids) {
 //     }
 //     return all_shard_ids.at(rand() % all_shard_ids.size());
 // }
+pair<int, int> HieraShardTree::get_inter_childs(int internal_groupId) {
+    vector<int> childs;
+    HieraShardNode* shard = get_shard_by_internal_groupId(internal_groupId); 
+    childs.push_back(shard->internal_groupId);
+    for (auto child: shard->children) {
+        childs.push_back(child->internal_groupId);
+    } 
+    int shard_1_index = rand() % childs.size();
+    int shard_2_index = rand() % childs.size();
+    while (shard_1_index == shard_2_index) {
+        shard_2_index = rand() % childs.size();
+    }  
+    return make_pair(childs.at(shard_1_index), childs.at(shard_2_index));
+}
 // todo
 // 获取跨层跨片交易的两个分片id
 // 跨层跨片交易，两个分片在不同的子树

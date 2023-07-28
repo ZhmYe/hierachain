@@ -32,9 +32,9 @@ namespace dev{
 
             public:
                 // 导入测试负载
-                int intra_shardTxNumber;
-                int inter_shardTxNumber;
-                int cross_layerTxNumber;
+                // int intra_shardTxNumber;
+                // int inter_shardTxNumber;
+                // int cross_layerTxNumber;
 
                 shared_ptr<dev::ledger::LedgerManager> m_ledgerManager;
                 shared_ptr<dev::rpc::Rpc> m_rpc_service;

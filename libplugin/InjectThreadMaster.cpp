@@ -42,6 +42,9 @@ void InjectThreadMaster::injectTransactions(int threadId, int threadNum) {
 //         << "m_minitest_9shard.get_2shard_cross() = " << m_minitest_9shard->get_2shard_cross() << endl
 //         << "m_minitest_9shard.get_1shard_cross() = " << m_minitest_9shard->get_1shard_cross() << endl
 //         << "m_minitest_9shard.get_1shard_cross2() = " << m_minitest_9shard->get_1shard_cross2() << endl;
+      int intra_shardTxNumber = 0;
+      int inter_shardTxNumber = 0;
+      int cross_layerTxNumber = 0;
       tuple<int, int, int> tx_number = m_minitest_shard->get_txNumber(internal_groupId);
       std::tie(intra_shardTxNumber, inter_shardTxNumber, cross_layerTxNumber) = tx_number;
       dev::plugin::total_injectNum = intra_shardTxNumber + inter_shardTxNumber + cross_layerTxNumber;

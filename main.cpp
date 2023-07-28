@@ -66,7 +66,12 @@ namespace dev {
         string nodeIdHex;
         shared_ptr<dev::plugin::HieraShardTree> hieraShardTree = make_shared<dev::plugin::HieraShardTree>();
         int injectSpeed = 5000;
+        int inject_threadNumber = 2;
         int total_injectNum = -1;
+        int intra_generateNumber = 1000000;
+        int inter_generateNumber = 100000;
+        int cross_rate = 20;
+        int txid = 0;
         shared_ptr<map<string, bool>> m_validStateKey = make_shared<map<string, bool>>();
         shared_ptr<map<string, bool>> m_masterStateKey = make_shared<map<string, bool>>();
         shared_ptr<map<string, int>> m_masterRequestVotes = make_shared<map<string, int>>();
@@ -109,15 +114,15 @@ int main(int argc, char const *argv[]) {
         .add_option<int>("-n", "--number", "inject tx number, default is 400000", 400000) // 注入交易总数
         .add_option<int>("-s", "--speed", "inject speed(tps), default is 5000", 5000) // 注入速度
         .add_option<int>("-c", "--cross", "cross rate(0 ~ 100), default is 20", 20) // 跨片比例，0 ~ 100
-        .add_option<int>("-t", "--thread", "inject thread number, default is 1", 1) // 线程数
+        .add_option<int>("-t", "--thread", "inject thread number, default is 2", 2) // 线程数
         // .add_option<util::StepRange>("-r", "--range", "range", util::range(0, 10, 2)) 
         // .add_named_argument<std::string>("input", "initialize file")
         // .add_named_argument<std::string>("output", "output file")
         .parse(argc, argv);
     int injectNumber = args.get_option_int("--number");
-    int inject_threadNumber = args.get_option_int("--thread");
+    inject_threadNumber = args.get_option_int("--thread");
     dev::plugin::injectSpeed = args.get_option_int("--speed") / inject_threadNumber;
-    int cross_rate = args.get_option_int("--cross");
+    cross_rate = args.get_option_int("--cross");
     if (cross_rate > 100 || cross_rate < 0) {
         cout << "cross rate should be in range [0,100]!";
         return 1;
@@ -201,14 +206,14 @@ if(args.has_option("--generate")) {
     string intrashardworkload_filename = "shard"+ to_string(internal_groupId) +"_intrashard_workload_100w";
     injectTxs _injectionTest(rpcService, internal_groupId, ledgerManager);
     //todo Benchmark.cpp
-    _injectionTest.generateIntraShardWorkLoad(internal_groupId, intrashardworkload_filename, 1000000, hiera_shard_number);
+    _injectionTest.generateIntraShardWorkLoad(internal_groupId, intrashardworkload_filename, intra_generateNumber, hiera_shard_number);
 // 生成局部性跨片交易
     // 只要判断当前节点是否有局部性跨片交易 
     if (hieraShardTree->is_inter(internal_groupId)) {
       string intershardworkload_filename = "shard"+ to_string(internal_groupId) +"_intershard_workload_10w.json";
       injectTxs _injectionTest(rpcService, internal_groupId, ledgerManager);
       //todo Benchmark.cpp
-      _injectionTest.generateInterShardWorkLoad(internal_groupId, lower_groupIds, intershardworkload_filename, 100000, ledgerManager);
+      _injectionTest.generateInterShardWorkLoad(internal_groupId, intershardworkload_filename, inter_generateNumber, ledgerManager);
     }
 // 生成跨层交易
     //只要判断当前节点是否有跨层交易
@@ -216,7 +221,7 @@ if(args.has_option("--generate")) {
       string crosslayerworkload_filename = "shard"+ to_string(internal_groupId) +"_crosslayer_workload_10w.json";
       injectTxs _injectionTest(rpcService, internal_groupId, ledgerManager);
       //todo Benchmark.cpp
-      _injectionTest.generateCrossLayerWorkLoad(internal_groupId, crosslayerworkload_filename, 100000, ledgerManager);
+      _injectionTest.generateCrossLayerWorkLoad(internal_groupId, crosslayerworkload_filename, inter_generateNumber, ledgerManager);
     }
 } else {
     //此处发送交易
