@@ -5,9 +5,9 @@ zm分支新增**argparse**功能，可通过命令行解析输入参数
 Options:
   -?, --help               show this help message
   -g, --generate           -g代表生成负载模式，如果是注入交易测试无需此参数
-  -n, --number             (int)每个叶子节点注入片内交易数（正在修改代码，后改为注入总交易数），默认200
+  -n, --number             (int)注入总交易数，默认400000
   -s, --speed              (int) 注入速度，默认5000
-  -c, --cross              (int) 跨片比（0~100），默认20（正在修改代码，现在是片内交易比例，如20代表跨片比80），默认为20
+  -c, --cross              (int) 跨片比（0~100），默认为20
   -t, --thread             (int) 注入线程数, 默认2
 ```
 ## Update 2023/6
@@ -200,7 +200,7 @@ typedef struct HieraShardNode {
 - ```int get_inter_shard_number();``` 返回当前树结构中需要处理局部性跨片交易的分片个数（非叶子节点数）
 - ```int get_cross_layer_shard_number();``` 返回当前树结构中需要处理跨层跨片交易的分片个数
 - ```int getLCA(int shard_1_groupId, int shard_2_groupId);``` 返回id为```shard_1_groupId```和```shard_2_groupId```的分片的最近公共祖先分片id
-<!-- - ```int get_cross_layer_child(int internal_groupId);``` 用于生成跨层跨片交易（默认跨两个分片）时，若其中涉及的其中一个分片是coordinator本身，返回另一个分片id
+  <!-- - ```int get_cross_layer_child(int internal_groupId);``` 用于生成跨层跨片交易（默认跨两个分片）时，若其中涉及的其中一个分片是coordinator本身，返回另一个分片id
     - 此时需要找到coordinator除了直接一阶子节点外的所有的后代节点，然后随机返回其中一个 -->
 - ```pair<int, int> get_cross_layer_childs(int internal_groupId);``` 用于生成跨层跨片交易（默认跨两个分片）时，返回两个分片id
     - case1: 若其中涉及的其中一个分片是coordinator本身，返回另一个分片id,此时需要找到coordinator除了直接一阶子节点外的所有的后代节点，然后随机返回其中一个
